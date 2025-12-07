@@ -48,6 +48,19 @@ const sectionIcons: Record<ReportKey, JSX.Element> = {
 const foodEmoji = ["🥑", "🍎", "🍇", "🥕", "🍊", "🍚", "🥗"];
 const TOTAL_LIMIT = 50;
 
+const HEADER_ALIASES: Record<string, string> = {
+  snp: "rsid",
+  id: "rsid",
+  chrom: "chromosome",
+  chr: "chromosome",
+  pos: "position",
+  result: "genotype",
+  call: "genotype",
+  calls: "genotype",
+  allele1: "allele1",
+  allele2: "allele2",
+};
+
 export default function Home() {
   const { language } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
@@ -62,17 +75,21 @@ export default function Home() {
 
   const text = (key: Parameters<typeof t>[1]) => t(language, key);
 
+  const normalizeHeader = (header: string) => {
+    const normalized = header.trim().toLowerCase().replace(/[\s_-]+/g, "");
+    return HEADER_ALIASES[normalized] ?? normalized;
+  };
+
   const parseCsvClient = async (targetFile: File): Promise<UserVariant[]> => {
     const fileText = await targetFile.text();
     const parsed = Papa.parse(fileText, {
       header: true,
       skipEmptyLines: true,
       comments: "#",
-      transformHeader: (h) => h.trim().toLowerCase(),
+      transformHeader: normalizeHeader,
     });
 
-    const headers =
-      parsed.meta.fields?.map((h) => h.trim().toLowerCase()) ?? [];
+    const headers = parsed.meta.fields?.map(normalizeHeader) ?? [];
     const hasGenotype = headers.includes("genotype");
     const hasAlleles =
       headers.includes("allele1") && headers.includes("allele2");
