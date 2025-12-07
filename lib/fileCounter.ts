@@ -1,7 +1,12 @@
 import fs from "fs";
 import path from "path";
 
-const COUNTER_PATH = path.join(process.cwd(), ".next", "cache", "openai_counter.json");
+const COUNTER_PATH = path.join(
+  process.cwd(),
+  ".next",
+  "cache",
+  "openai_counter.json"
+);
 const TOTAL_LIMIT = 50;
 
 type CounterData = { total: number };
@@ -49,4 +54,3 @@ export function incrementTotalFile(): number {
 }
 
 export { TOTAL_LIMIT };
-

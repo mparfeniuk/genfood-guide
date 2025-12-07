@@ -1,5 +1,6 @@
 "use client";
 
+import Papa from "papaparse";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import {
@@ -33,7 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { t } from "@/lib/copy";
-import { type AnalysisResponse } from "@/lib/types";
+import { type AnalysisResponse, type UserVariant } from "@/lib/types";
 
 type ReportKey = "risks" | "avoid" | "add" | "general";
 
@@ -61,6 +62,57 @@ export default function Home() {
 
   const text = (key: Parameters<typeof t>[1]) => t(language, key);
 
+  const parseCsvClient = async (targetFile: File): Promise<UserVariant[]> => {
+    const fileText = await targetFile.text();
+    const parsed = Papa.parse(fileText, {
+      header: true,
+      skipEmptyLines: true,
+      comments: "#",
+      transformHeader: (h) => h.trim().toLowerCase(),
+    });
+
+    const headers = parsed.meta.fields?.map((h) => h.trim().toLowerCase()) ?? [];
+    const hasGenotype = headers.includes("genotype");
+    const hasAlleles = headers.includes("allele1") && headers.includes("allele2");
+    if (!headers.includes("rsid") || !headers.includes("chromosome") || !headers.includes("position") || (!hasGenotype && !hasAlleles)) {
+      throw new Error("Невірні колонки. Потрібні: rsid, chromosome, position і genotype або allele1+allele2.");
+    }
+
+    const rows = (parsed.data as Record<string, string | number | null>[]).filter(
+      (row) => Object.keys(row).length > 0,
+    );
+
+    return rows
+      .map((row) => {
+        const rsid = String(row.rsid ?? "").trim();
+        if (!rsid) return null;
+        const chromosome = String(row.chromosome ?? "").trim();
+        const positionValue = row.position;
+        const position =
+          positionValue === null || positionValue === undefined
+            ? null
+            : Number(positionValue);
+
+        const allele1 = row.allele1 ? String(row.allele1).trim() : "";
+        const allele2 = row.allele2 ? String(row.allele2).trim() : "";
+        const genotypeRaw =
+          row.genotype ??
+          (allele1 || allele2 ? `${allele1}${allele2}` : row.result ?? row.call);
+
+        const genotype = String(genotypeRaw ?? "")
+          .replace(/\s+/g, "")
+          .toUpperCase();
+
+        return {
+          rsid,
+          chromosome,
+          position: Number.isFinite(position) ? position : null,
+          genotype,
+        } satisfies UserVariant;
+      })
+      .filter(Boolean) as UserVariant[];
+  };
+
   const runSample = async () => {
     const res = await fetch("/example/myheritage_sample.csv");
     const blob = await res.blob();
@@ -76,17 +128,21 @@ export default function Home() {
       setError(text("noFile"));
       return;
     }
+    // Quick size guard for Vercel serverless limits
+    if (file.size > 4 * 1024 * 1024) {
+      setError("Файл занадто великий (>4MB). Завантажте менший файл.");
+      return;
+    }
     setError(null);
     setIsLoading(true);
     setResult(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("language", language);
+      const variants = await parseCsvClient(file);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variants, language }),
       });
       if (!response.ok) {
         const textBody = await response.text();

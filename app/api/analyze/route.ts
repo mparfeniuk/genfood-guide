@@ -12,7 +12,7 @@ import {
   fallbackReport,
   searchRelevantVariants,
 } from "@/lib/rag";
-import { type AnalysisReport, type AnalysisResponse } from "@/lib/types";
+import { type AnalysisReport, type AnalysisResponse, type UserVariant } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -46,40 +46,53 @@ function parseReport(content: string): AnalysisReport | null {
 export async function POST(request: Request) {
   try {
     console.log("Analyze API invoked");
-    const formData = await request.formData();
-    const file = formData.get("file");
-    const fileBlob = file instanceof Blob ? file : null;
-    const langValue = (formData.get("language") as string) || "uk";
-    const language = langValue === "en" ? "en" : "uk";
+    const contentType = request.headers.get("content-type") || "";
 
-    if (!fileBlob) {
-      return NextResponse.json(
-        { error: "CSV file is required." },
-        { status: 400 }
-      );
+    let variants: UserVariant[] = [];
+    let language = "uk" as "uk" | "en";
+
+    if (contentType.includes("application/json")) {
+      const body = (await request.json()) as { variants?: UserVariant[]; language?: string };
+      language = body.language === "en" ? "en" : "uk";
+      if (!body.variants || !Array.isArray(body.variants)) {
+        return NextResponse.json({ error: "Variants are required." }, { status: 400 });
+      }
+      variants = body.variants;
+    } else {
+      const formData = await request.formData();
+      const file = formData.get("file");
+      const fileBlob = file instanceof Blob ? file : null;
+      const langValue = (formData.get("language") as string) || "uk";
+      language = langValue === "en" ? "en" : "uk";
+
+      if (!fileBlob) {
+        return NextResponse.json(
+          { error: "CSV file is required." },
+          { status: 400 }
+        );
+      }
+
+      const text = await fileBlob.text();
+
+      try {
+        variants = parseMyHeritageCsv(text);
+      } catch (err) {
+        console.error("CSV parse error", err);
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Invalid CSV. Make sure required columns are present.";
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
     }
 
-    // Limit total OpenAI calls across all users (file-based)
+    // Limit total OpenAI calls across all users (file-based / in-memory on Vercel)
     const total = getTotalFile();
     if (total >= TOTAL_LIMIT) {
       return NextResponse.json(
         { error: "Limit reached", code: "LIMIT_REACHED", total },
         { status: 429 }
       );
-    }
-
-    const text = await fileBlob.text();
-
-    let variants;
-    try {
-      variants = parseMyHeritageCsv(text);
-    } catch (err) {
-      console.error("CSV parse error", err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Invalid CSV. Make sure required columns are present.";
-      return NextResponse.json({ error: message }, { status: 400 });
     }
     const matches = searchRelevantVariants(variants);
     const context = buildPromptContext(matches);
