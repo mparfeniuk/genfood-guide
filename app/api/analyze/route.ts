@@ -104,6 +104,7 @@ If unsure, return empty arrays for any section. Do not include any other text.
 
     if (!openaiClient) {
       console.warn("OpenAI client missing: check OPENAI_API_KEY");
+      console.log("Env check OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
     } else {
       try {
         console.log("Calling OpenAI chat completion...");
