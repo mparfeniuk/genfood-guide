@@ -71,16 +71,25 @@ export default function Home() {
       transformHeader: (h) => h.trim().toLowerCase(),
     });
 
-    const headers = parsed.meta.fields?.map((h) => h.trim().toLowerCase()) ?? [];
+    const headers =
+      parsed.meta.fields?.map((h) => h.trim().toLowerCase()) ?? [];
     const hasGenotype = headers.includes("genotype");
-    const hasAlleles = headers.includes("allele1") && headers.includes("allele2");
-    if (!headers.includes("rsid") || !headers.includes("chromosome") || !headers.includes("position") || (!hasGenotype && !hasAlleles)) {
-      throw new Error("Невірні колонки. Потрібні: rsid, chromosome, position і genotype або allele1+allele2.");
+    const hasAlleles =
+      headers.includes("allele1") && headers.includes("allele2");
+    if (
+      !headers.includes("rsid") ||
+      !headers.includes("chromosome") ||
+      !headers.includes("position") ||
+      (!hasGenotype && !hasAlleles)
+    ) {
+      throw new Error(
+        "Невірні колонки. Потрібні: rsid, chromosome, position і genotype або allele1+allele2."
+      );
     }
 
-    const rows = (parsed.data as Record<string, string | number | null>[]).filter(
-      (row) => Object.keys(row).length > 0,
-    );
+    const rows = (
+      parsed.data as Record<string, string | number | null>[]
+    ).filter((row) => Object.keys(row).length > 0);
 
     return rows
       .map((row) => {
@@ -97,7 +106,9 @@ export default function Home() {
         const allele2 = row.allele2 ? String(row.allele2).trim() : "";
         const genotypeRaw =
           row.genotype ??
-          (allele1 || allele2 ? `${allele1}${allele2}` : row.result ?? row.call);
+          (allele1 || allele2
+            ? `${allele1}${allele2}`
+            : row.result ?? row.call);
 
         const genotype = String(genotypeRaw ?? "")
           .replace(/\s+/g, "")
@@ -126,11 +137,6 @@ export default function Home() {
   const onAnalyze = async () => {
     if (!file) {
       setError(text("noFile"));
-      return;
-    }
-    // Quick size guard for Vercel serverless limits
-    if (file.size > 4 * 1024 * 1024) {
-      setError("Файл занадто великий (>4MB). Завантажте менший файл.");
       return;
     }
     setError(null);
