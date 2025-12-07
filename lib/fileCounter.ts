@@ -6,6 +6,8 @@ const TOTAL_LIMIT = 50;
 
 type CounterData = { total: number };
 
+let memoryCounter = 0;
+
 function readFileSafe(): CounterData {
   try {
     const raw = fs.readFileSync(COUNTER_PATH, "utf8");
@@ -21,17 +23,25 @@ function writeFileSafe(data: CounterData) {
   try {
     fs.mkdirSync(path.dirname(COUNTER_PATH), { recursive: true });
     fs.writeFileSync(COUNTER_PATH, JSON.stringify(data), "utf8");
-  } catch (e) {
-    console.error("fileCounter write error", e);
+  } catch {
+    // ignore on read-only FS
   }
 }
 
 export function getTotalFile(): number {
+  if (process.env.VERCEL) {
+    // serverless read-only FS: use in-memory
+    return memoryCounter;
+  }
   const data = readFileSafe();
   return data.total;
 }
 
 export function incrementTotalFile(): number {
+  if (process.env.VERCEL) {
+    memoryCounter += 1;
+    return memoryCounter;
+  }
   const data = readFileSafe();
   const next = data.total + 1;
   writeFileSafe({ total: next });
