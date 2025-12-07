@@ -1,7 +1,11 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
-import { getTotalFile, incrementTotalFile, TOTAL_LIMIT } from "@/lib/fileCounter";
+import {
+  getTotalFile,
+  incrementTotalFile,
+  TOTAL_LIMIT,
+} from "@/lib/fileCounter";
 import { parseMyHeritageCsv } from "@/lib/parseCsv";
 import {
   buildPromptContext,
@@ -41,6 +45,7 @@ function parseReport(content: string): AnalysisReport | null {
 
 export async function POST(request: Request) {
   try {
+    console.log("Analyze API invoked");
     const formData = await request.formData();
     const file = formData.get("file");
     const fileBlob = file instanceof Blob ? file : null;
@@ -104,7 +109,10 @@ If unsure, return empty arrays for any section. Do not include any other text.
 
     if (!openaiClient) {
       console.warn("OpenAI client missing: check OPENAI_API_KEY");
-      console.log("Env check OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
+      console.log(
+        "Env check OPENAI_API_KEY exists:",
+        !!process.env.OPENAI_API_KEY
+      );
     } else {
       try {
         console.log("Calling OpenAI chat completion...");
