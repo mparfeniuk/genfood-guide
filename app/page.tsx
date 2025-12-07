@@ -34,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { t } from "@/lib/copy";
+import { geneticsDb } from "@/lib/geneticsDb";
 import { type AnalysisResponse, type UserVariant } from "@/lib/types";
 
 type ReportKey = "risks" | "avoid" | "add" | "general";
@@ -76,7 +77,10 @@ export default function Home() {
   const text = (key: Parameters<typeof t>[1]) => t(language, key);
 
   const normalizeHeader = (header: string) => {
-    const normalized = header.trim().toLowerCase().replace(/[\s_-]+/g, "");
+    const normalized = header
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, "");
     return HEADER_ALIASES[normalized] ?? normalized;
   };
 
@@ -108,10 +112,14 @@ export default function Home() {
       parsed.data as Record<string, string | number | null>[]
     ).filter((row) => Object.keys(row).length > 0);
 
+    const allowedRsids = new Set(
+      geneticsDb.map((entry) => entry.rsid.toLowerCase()),
+    );
+
     return rows
       .map((row) => {
         const rsid = String(row.rsid ?? "").trim();
-        if (!rsid) return null;
+        if (!rsid || !allowedRsids.has(rsid.toLowerCase())) return null;
         const chromosome = String(row.chromosome ?? "").trim();
         const positionValue = row.position;
         const position =
