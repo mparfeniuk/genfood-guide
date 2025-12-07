@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DNA Nutrition Explainer
 
-## Getting Started
+Next.js 15 + Tailwind + shadcn-style UI app that ingests MyHeritage CSV files, matches SNPs against a local nutrition knowledge base (RAG), and returns bilingual (UA/EN) recommendations.
 
-First, run the development server:
+## Stack
+- Next.js 15 (app router), TypeScript
+- TailwindCSS + shadcn UI primitives
+- OpenAI (gpt-4o-mini) with local RAG context (rsID-indexed knowledge)
 
+## Quickstart
+1) Install
+```bash
+npm install
+```
+2) Env
+```bash
+echo "OPENAI_API_KEY=your-key" > .env.local
+```
+If no key is provided, the API falls back to deterministic, rule-based summaries.
+
+3) Run dev
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+Open http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How it works
+- Upload: `components/UploadCSV.tsx` handles drag/drop + validation. Sample file: `public/example/myheritage_sample.csv`.
+- Parse: `lib/parseCsv.ts` expects headers rsid, chromosome, position, genotype; skips comment lines that start with `#`.
+- Knowledge base: `lib/geneticsDb.ts` holds 20+ curated nutrition SNPs (effects, foods to favor/avoid, lifestyle notes).
+- RAG: `lib/rag.ts` matches rsID/genotype, builds prompt context, and provides a deterministic fallback report if OpenAI is unavailable.
+- API: `app/api/analyze/route.ts` parses CSV, runs RAG, calls OpenAI (when configured), and returns JSON sections: risks, avoid, add, general, plus matched SNPs.
+- UI: `app/page.tsx` renders upload, analyze action, report cards, SNP match table, and language toggle (UA/EN).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
+- Target: Vercel (Node runtime). Add `OPENAI_API_KEY` to project env vars.
+- Static assets: sample CSV under `public/example/`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- All processing is in-memory; no persistence.
+- Output is food-first, concise, and avoids medical diagnoses. Comments in code are in English.

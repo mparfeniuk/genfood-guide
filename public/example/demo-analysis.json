@@ -1,0 +1,83 @@
+{
+  "report": {
+    "risks": [
+      "Лактоза: можливі неприємні відчуття від молока — спробуйте безлактозне або ферментоване.",
+      "Вітамін D: може знадобитися більше сонця чи продуктів з вітаміном D.",
+      "Кофеїн: підвищена чутливість — уникайте великих доз і пізньої кави."
+    ],
+    "avoid": [
+      "Звичайне молоко великими порціями",
+      "Великі дози насичених жирів",
+      "Енергетичні напої ввечері"
+    ],
+    "add": [
+      "Безлактозне молоко або кефір",
+      "Риба, яйця або збагачені продукти з вітаміном D",
+      "Оливкова олія та горіхи замість тваринних жирів"
+    ],
+    "general": [
+      "Слідкуйте за реакцією на молочне й оберіть комфортний обсяг",
+      "Перевіряйте рівень вітаміну D за потреби",
+      "Переносьте кофеїн на ранок і зменшуйте дозу, якщо є тривожність"
+    ]
+  },
+  "matches": [
+    {
+      "entry": {
+        "rsid": "rs4988235",
+        "gene": "LCT",
+        "trait": "Lactose tolerance",
+        "effect": "Low lactase activity may cause lactose sensitivity.",
+        "impact": "Likely lactose sensitivity if genotype is CC/CT.",
+        "recommendedFoods": ["lactose-free dairy", "aged cheeses", "kefir"],
+        "avoidFoods": ["regular milk", "soft cheeses"],
+        "lifestyleNotes": "Try lactose-free options and titrate dairy slowly.",
+        "keywords": ["lactose", "dairy"],
+        "riskAlleles": ["C"]
+      },
+      "userGenotype": "CT",
+      "confidence": 0.9,
+      "rationale": "User genotype contains noted risk allele."
+    },
+    {
+      "entry": {
+        "rsid": "rs2282679",
+        "gene": "GC",
+        "trait": "Vitamin D transport",
+        "effect": "Variant can lower vitamin D binding protein efficiency.",
+        "impact": "May need slightly higher vitamin D intake.",
+        "recommendedFoods": ["salmon", "sardines", "mushrooms under UV"],
+        "avoidFoods": ["very low-fat diets reducing D absorption"],
+        "lifestyleNotes": "Pair vitamin D with meals containing healthy fats.",
+        "keywords": ["vitamin d", "binding"],
+        "riskAlleles": ["A"]
+      },
+      "userGenotype": "AG",
+      "confidence": 0.65,
+      "rationale": "User rsID matches database; risk allele not clearly present."
+    },
+    {
+      "entry": {
+        "rsid": "rs5751876",
+        "gene": "ADORA2A",
+        "trait": "Caffeine sensitivity",
+        "effect": "A allele may increase anxiety from caffeine.",
+        "impact": "Higher sensitivity to stimulant effects.",
+        "recommendedFoods": ["decaf options", "herbal tea", "steady meals"],
+        "avoidFoods": ["energy drinks", "pre-workout stimulants"],
+        "lifestyleNotes": "Pair caffeine with food; consider smaller, earlier doses.",
+        "keywords": ["caffeine", "anxiety"],
+        "riskAlleles": ["A"]
+      },
+      "userGenotype": "AA",
+      "confidence": 0.9,
+      "rationale": "User genotype contains noted risk allele."
+    }
+  ],
+  "meta": {
+    "parsedVariants": 3,
+    "matchedVariants": 3,
+    "language": "uk"
+  }
+}
+
