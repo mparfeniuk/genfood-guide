@@ -72,7 +72,7 @@ export default function Home() {
   const [emojiIndex, setEmojiIndex] = useState(0);
   const [totalRequests, setTotalRequests] = useState<number | null>(null);
   const [bannerLang, setBannerLang] = useState<"uk" | "en">("uk");
-  const [bannerCollapsed, setBannerCollapsed] = useState(false);
+  const [bannerCollapsed, setBannerCollapsed] = useState(true);
 
   const text = (key: Parameters<typeof t>[1]) => t(language, key);
 
@@ -113,7 +113,7 @@ export default function Home() {
     ).filter((row) => Object.keys(row).length > 0);
 
     const allowedRsids = new Set(
-      geneticsDb.map((entry) => entry.rsid.toLowerCase()),
+      geneticsDb.map((entry) => entry.rsid.toLowerCase())
     );
 
     return rows
@@ -318,20 +318,22 @@ export default function Home() {
               <ul className="space-y-2">
                 {(bannerLang === "uk"
                   ? [
-                      "Пофанити й покреативити, пробрейнстормити ідеї.",
-                      "Відпрацювати вайбкодинг і швидкий перехід від ідеї до MVP.",
-                      "Подивитися, як AI-підхід впливає на темп і якість.",
-                      "Зрозуміти сильні/слабкі сторони підходу. Потенційні продуктові вигоди.",
+                      "Повчитись вайбкодити за допомогою Cursor.",
+                      "Дослідити, як AI-підхід впливає на темп і якість.",
+                      "Зрозуміти сильні/слабкі сторони підходу, потенційні продуктові вигоди.",
                       "Напрацьовувати нове мислення в реалізації проектів.",
-                      "Вчасно відриватися від коду й приборкувати перфекціонізм — робити швидко й без залипань.",
+                      "Створити проєкти, які хотілося реалізувати, але не було часу й можливостей.",
+                      "Попрацювати в творчому, спонтанному, необтяжливому ключі.",
+                      "Накидати проєкти в портфоліо.",
                     ]
                   : [
-                      "Have fun, get creative, brainstorm ideas.",
-                      "Practice vibe-coding and jumping from idea to live MVP fast.",
-                      "See how the AI-assisted approach affects speed and quality.",
-                      "Understand approach strengths/weak spots. Potential product wins.",
+                      "Learn vibe-coding with Cursor.",
+                      "Explore how the AI-assisted approach affects speed and quality.",
+                      "Understand the approach’s strengths/weaknesses and product upsides.",
                       "Build a new mindset for shipping projects.",
-                      "Step away on time and tame perfectionism — ship fast, skip endless polish.",
+                      "Ship projects you wanted to build but lacked time or access to.",
+                      "Work in a creative, spontaneous, low-pressure flow.",
+                      "Add quick projects to the portfolio.",
                     ]
                 ).map((item, idx) => (
                   <li
